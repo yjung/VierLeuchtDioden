@@ -8,7 +8,11 @@
 #include <unistd.h>
   
 #define BAUDRATE B9600
+#ifdef __linux__
+#define MODEMDEVICE "/dev/ttyACM0"
+#else  // MACOS
 #define MODEMDEVICE "/dev/cu.usbmodemfa131"
+#endif
 
 int main()
 {

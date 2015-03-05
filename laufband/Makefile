@@ -1,4 +1,4 @@
-pre:
+default:
 	gcc main.cpp -o testIt -lwiringPi
 
 clean:
