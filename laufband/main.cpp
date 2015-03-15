@@ -6,13 +6,24 @@
 
 enum Pins {
     _17_ = 0, 
-    _18_, 
-    _27_, 
-    _22_, 
-    _23_
+    _18_ = 1, 
+    _27_ = 2, 
+    _22_ = 3, 
+    _23_ = 4,
+    _19_ = 24
 };
 
-//void ( *signal(int signum, void (*handler)(int)) ) (int);
+#define LOW 0
+#define HIGH 1
+
+
+#define motor1_Speed _18_
+#define motor1_B _17_
+#define motor1_A _27_ 
+
+#define motor2_Speed _19_
+#define motor2_B _22_
+#define motor2_A _23_ 
 
 void sigCallback(int sig)
 {
@@ -21,17 +32,20 @@ void sigCallback(int sig)
     printf("Programm stopped!\n");
     
     // Cleanup
-    digitalWrite(_17_, 0);
-    digitalWrite(_18_, 0);
-    digitalWrite(_27_, 0);
-    digitalWrite(_22_, 0);
+    pwmWrite(_18_, 0);
+    pwmWrite(_19_, 0);
     
+    digitalWrite(_17_, 0);
+    digitalWrite(_22_, 0);
+    digitalWrite(_23_, 0);
+    digitalWrite(_27_, 0);
+
     exit(0);
 }
 
 int main(int argc, char* argv[])
 {
-    // Starte die WiringPi-Api (wichtig)
+    // Starte die WiringPi-Api
     if (wiringPiSetup() == -1) {
         printf("Couldn't init wiring!\n");
         return 1;
@@ -40,71 +54,50 @@ int main(int argc, char* argv[])
     if (signal(SIGINT, sigCallback) == SIG_ERR) {
         printf("Error on installing signal handler\n");
     }
-    
-    /*const*/ int DELAY = M_PI * 100;
-    if (argc > 1) {
-        DELAY = (int)atof(argv[1]);
-        DELAY = (DELAY < 1) ? 1 : DELAY;
-        printf("Delay = %d\n", DELAY);
-    }
 
-    // Schalte GPIO 17 (=WiringPi Pin 0) auf Ausgang
-    // Wichtig: Hier wird das WiringPi Layout verwendet (Tabelle oben)
+    pinMode(_18_, PWM_OUTPUT);
+    pinMode(_19_, PWM_OUTPUT);
+    
     pinMode(_17_, OUTPUT);
-    pinMode(_18_, OUTPUT);
-    pinMode(_27_, OUTPUT);
     pinMode(_22_, OUTPUT);
+    pinMode(_23_, OUTPUT);
+    pinMode(_27_, OUTPUT);
     
-    pinMode(_23_, INPUT);
-    
-    int dir, oldDir = digitalRead(_23_);
-    unsigned char i = 0;
-    
+    int speed = 1023;
     while (true) {
-        dir = digitalRead(_23_);
+        //if (speed > 255)
+        //    speed = 0;
         
-        if (!dir) {
-            //hochzaehlen
-            if (oldDir != dir) {
-                i = ++i % 4;
-                digitalWrite((i+1) % 4, 0);
-            }
-            else {
-                // LED aus
-                digitalWrite(!i ? 3 : i-1, 0);
-                // LED an
-                digitalWrite(i, 1);
-                // Warte
-                delay(DELAY);
-            }
-            
-            i = ++i % 4;
-        }
-        else {
-            //runterzaehlen
-            if (oldDir != dir) {
-                i = --i % 4;
-                digitalWrite(!i ? 3 : i-1, 0);
-            }
-            else {
-                // LED aus
-                digitalWrite((i+1) % 4, 0);
-                // LED an
-                digitalWrite(i, 1);
-                // Warte
-                delay(DELAY);
-            }
-            
-            i = --i % 4;
-        }
+        digitalWrite(motor1_B,LOW);
+        digitalWrite(motor2_B,LOW);
+        digitalWrite(motor1_A,HIGH);
+        digitalWrite(motor2_A,HIGH);
         
-        oldDir = dir;
+        pwmWrite(motor1_Speed,speed);
+        pwmWrite(motor2_Speed,speed);
+        
+        delay(1000);
+        pwmWrite(motor1_Speed,0);
+        pwmWrite(motor2_Speed,0);
+        
+        digitalWrite(motor1_A,LOW);
+        digitalWrite(motor2_A,LOW);
+        digitalWrite(motor1_B,HIGH);
+        digitalWrite(motor2_B,HIGH);
+        pwmWrite(motor2_Speed,speed);
+        pwmWrite(motor1_Speed,speed);
+        
+        delay(1000);
+        pwmWrite(motor1_Speed,0);
+        pwmWrite(motor2_Speed,0);
+        
+        digitalWrite(motor1_A,LOW);
+        digitalWrite(motor1_B,LOW);
+        digitalWrite(motor2_A,LOW);
+        digitalWrite(motor2_B,LOW);
+        
+        //speed += 10;
     }
-    
-    digitalWrite(_17_, 0);
-    digitalWrite(_18_, 0);
-    digitalWrite(_27_, 0);
-    digitalWrite(_22_, 0);
 
     return 0;
 }
