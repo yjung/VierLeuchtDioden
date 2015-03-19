@@ -20,5 +20,24 @@
 <li><a href=""></a></li>
 -->
 </ul>
+
+<hr>
+<br>
+<p>
+<input type="button" value="Toggle ON/OFF" id="testBtn">
+</p>
+<script>
+var xhr = new XMLHttpRequest();
+
+var btn = document.getElementById("testBtn");
+var on = true;
+
+btn.addEventListener("click", function(evt) {
+        on = !on;
+        //xhr.open("GET", "http://localhost:5000/links.html?led="+on.toString(), true);
+        xhr.open("GET", "links.html?led="+on.toString(), true);
+        xhr.send();
+    });
+</script>
 </body>
 </html>
