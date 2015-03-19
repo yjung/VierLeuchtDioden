@@ -31,6 +31,10 @@ static int g_testVar = 0;
 static bool g_enabled = true;
 static bool g_ledOn = true;
 
+
+void doSysCall(char *args[]);
+
+
 int print_out_key (void *cls, enum MHD_ValueKind kind,
                    const char *key, const char *value)
 {
@@ -88,7 +92,7 @@ int answer_to_connection (void *cls, struct MHD_Connection *connection,
   struct MHD_Response *response = MHD_create_response_from_buffer (len, //strlen (page),
                                               (void*) page, MHD_RESPMEM_PERSISTENT);
   
-  MHD_add_response_header (response, "Content-Type", "text/html");
+  //MHD_add_response_header (response, "Content-Type", "text/html");
   MHD_add_response_header (response, "Access-Control-Allow-Origin", "*");
   
   int ret = MHD_queue_response (connection, MHD_HTTP_OK, response);
@@ -115,7 +119,7 @@ int answer_to_connection (void *cls, struct MHD_Connection *connection,
   return ret;
 }
 
-int main(int argc, char* argv[])
+int main(int argc, char *argv[])
 {
   // Starte die WiringPi-Api
   if (wiringPiSetup() == -1) {
@@ -132,6 +136,13 @@ int main(int argc, char* argv[])
   if (!daemon)
     return 1;
   
+  // initialize args with the command strings
+  char *args[] = { "raspistill", "-o", "picture.jpg", "-w", "324", "-h", "243", NULL };     
+  
+#if 0
+  doSysCall(args);
+#endif
+  
   while (g_enabled) {
     digitalWrite(_16_, g_ledOn ? 1 : 0);
     delay(100);
@@ -142,4 +153,24 @@ int main(int argc, char* argv[])
   MHD_stop_daemon (daemon);
 
   return 0;
+}
+
+void doSysCall(char *args[]) {
+    int pid = fork();
+    
+    if (pid == -1) {
+        printf("Error: fork\n");
+        return;
+    }
+    
+    if (pid != 0)
+        return;
+
+    // If pid == 0, this is the child process.
+    printf("Calling %s to take image %s with Pid %d\n", args[0], args[2], pid);
+    //execvp does not return unless it fails.
+    if (execvp(args[0], args) == -1) {
+        printf("Error: execvp\n");
+    }
+    exit(1);
 }
