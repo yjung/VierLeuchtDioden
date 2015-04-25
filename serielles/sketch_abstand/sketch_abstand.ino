@@ -12,29 +12,29 @@ Red POS to Arduino pin 11, Green POS to Arduino pin 10
 
 void setup() {
   Serial.begin (9600);
-  
+
   pinMode(trigPin, OUTPUT);
   pinMode(echoPin, INPUT);
-  
+
   pinMode(ledRed, OUTPUT);
   pinMode(ledGreen, OUTPUT);
 }
 
 void loop() {
-  digitalWrite(trigPin, LOW);
-  delayMicroseconds(2);
+  //digitalWrite(trigPin, LOW);
+  //delayMicroseconds(2);
   digitalWrite(trigPin, HIGH);
-  delayMicroseconds(10);
+  delayMicroseconds(5);
   digitalWrite(trigPin, LOW);
-  
+
   long duration = pulseIn(echoPin, HIGH);
   // Schallgeschwindigkeit 340 m/s (15 Grad) u. 343 m/s (20)
   long distance = float(duration / 2) / 29.2f;
   //long distance = duration / 58;
-  
+
   // This is where the LED On/Off happens
   // When the Red condition is met, the Green LED should turn off
-  if (distance <= 2 || distance >= 400) {  
+  if (distance <= 2 || distance >= 400) {
     digitalWrite(ledRed, HIGH);
     digitalWrite(ledGreen, LOW);
   }
@@ -42,10 +42,10 @@ void loop() {
     digitalWrite(ledRed, LOW);
     digitalWrite(ledGreen, HIGH);
   }
-  
-  String str = String(distance) + " cm";
-  Serial.println(str);
-  
+
+  //String str = String(distance) + " cm";
+  Serial.println(distance);
+
   delay(62);
 }
 
